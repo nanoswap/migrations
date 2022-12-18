@@ -2,7 +2,7 @@ from typing import Union, TypeVar, Generic
 from datetime import datetime
 from pydantic import BaseModel
 from enum import Enum
-
+from random import random
 
 class LoanApplicationState(Enum):
     DRAFT = 1
@@ -31,12 +31,12 @@ class WalletStatus(object):
 
     reasons = {
         101: "missing_user_verification",
-        102: "fraud suspected",
-        103: "staked for loan"
+        102: "fraud_suspected",
+        103: "staked_for_loan"
     }
 
-    def __init__(self, doc_id, is_frozen, frozen_reason_code):
-        self.doc_id: str = doc_id
+    def __init__(self, is_frozen, frozen_reason_code):
+        self.doc_id: str = random()
         self.is_frozen: bool = is_frozen
         self.frozen_reason_code: int = frozen_reason_code
     
@@ -49,8 +49,8 @@ class WalletStatus(object):
         }
 
 class LoanApplicationStatus(object):
-    def __init__(self, doc_id, state, next, previous, timestamp):
-        self.doc_id: str = doc_id
+    def __init__(self, state, next, previous, timestamp):
+        self.doc_id: str = random()
         self.state: LoanApplicationState = state
         self.next: Union[LoanApplicationStatus, None] = next
         self.previous: Union[LoanApplicationStatus, None] = previous
@@ -66,8 +66,8 @@ class LoanApplicationStatus(object):
         }
 
 class LoanPaymentStatus(object):
-    def __init__(self, doc_id, state, next, previous, timestamp):
-        self.doc_id: str = doc_id,
+    def __init__(self, state, next, previous, timestamp):
+        self.doc_id: str = random(),
         self.state: LoanPaymentState = state
         self.next: Union[LoanPaymentStatus, None] = next
         self.previous: Union[LoanPaymentStatus, None] = previous
@@ -83,8 +83,8 @@ class LoanPaymentStatus(object):
         }
 
 class Wallet(object):
-    def __init__(self, doc_id, wallet_type, address, key, wallet_status):
-        self.doc_id: str = doc_id
+    def __init__(self, wallet_type, address, key, wallet_status):
+        self.doc_id: str = random()
         self.wallet_type: WalletType = wallet_type
         self.address: str = address
         self.key: str = key
@@ -111,7 +111,6 @@ class User(object):
 class Loan(object):
     def __init__(
             self,
-            doc_id,
             principal_in_xno,
             loan_start_date,
             monthly_payment,
@@ -121,7 +120,7 @@ class Loan(object):
             payment_wallet,
             principal_wallet,
             borrower):
-        self.doc_id: str = doc_id
+        self.doc_id: str = random()
         self.principal_in_xno: float = principal_in_xno
         self.loan_start_date: datetime = loan_start_date
         self.monthly_payment: float = monthly_payment
@@ -149,7 +148,6 @@ class Loan(object):
 class Stake(object):
     def __init__(
             self,
-            doc_id,
             owner,
             stake_start_date,
             stake_from_wallet,
@@ -157,7 +155,7 @@ class Stake(object):
             monthly_interest_rate,
             monthly_payment,
             number_of_payment_periods):
-        self.doc_id: str = doc_id
+        self.doc_id: str = random()
         self.owner: User = owner
         self.start_date: datetime = stake_start_date
         self.from_wallet: Wallet = stake_from_wallet
@@ -179,8 +177,8 @@ class Stake(object):
         }
 
 class LoanPayment(object):
-    def __init__(self, doc_id, loan, due_date, amount_due_in_xno, status):
-        self.doc_id: str = doc_id
+    def __init__(self, loan, due_date, amount_due_in_xno, status):
+        self.doc_id: str = random()
         self.loan: Loan = loan
         self.due_date: datetime = due_date
         self.amount_due_in_xno: float = amount_due_in_xno

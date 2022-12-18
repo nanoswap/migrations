@@ -1,4 +1,5 @@
-from firebase_admin import firestore, auth, credentials, initialize_app, DocumentReference
+from firebase import DocumentReference
+from firebase_admin import firestore, auth, credentials, initialize_app
 from google.protobuf.timestamp_pb2 import Timestamp
 from typing import Tuple
 from dotenv import load_dotenv

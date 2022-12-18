@@ -1,1 +1,7 @@
 python-dotenv
+python-jwt
+firebase
+firebase_admin
+gcloud
+sseclient
+pycryptodome
