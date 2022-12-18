@@ -5,3 +5,6 @@ firebase_admin
 gcloud
 sseclient
 pycryptodome
+pydantic
+requests_toolbelt
+nanolib

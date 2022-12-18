@@ -1,18 +1,20 @@
 from typing import List
 import schemas
-import utils
+import crud
+import nano
 import random
 import datetime
 
 # seed users and create wallets for each user
 
 def seed_users(count_users: int):
+    users_added = []
     for i in range(count_users):
-        _, cur_user = utils.insert_user(schemas.User(uid=str(i)))
-        utils.insert_wallet(schemas.Wallet(
+        _, cur_user = crud.insert_user(schemas.User(uid=str(i)))
+        crud.insert_wallet(schemas.Wallet(
             owner=cur_user,
             wallet_type=schemas.WalletType.WITHDRAW_OR_DEPOSIT,
-            address="123",
+            address=nano.get_address(),
             key=None,
             status=schemas.WalletStatus(
                 state=schemas.WalletState.FROZEN_MISSING_USER_VERIFICATION,
@@ -22,6 +24,9 @@ def seed_users(count_users: int):
                 timestamp=datetime.datetime.date()
             )
         ))
+        users_added.append(cur_user)
+    
+    return users_added
 
 # seed loans and create stake/payment data for each laon
 
