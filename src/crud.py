@@ -4,16 +4,19 @@ from typing import Tuple, Any
 from dotenv import load_dotenv
 from dataclasses import dataclass, asdict, fields
 from dacite import from_dict
+
 from pathlib import Path
 import os
 import schemas
 
-# firebase auth credentials
+# firebase / firestore setup
+
+os.environ["FIRESTORE_EMULATOR_HOST"] = "127.0.0.1:8080"
 load_dotenv(Path(os.environ['SECRETS_PATH']+"/.env.nanobank"))
 initialize_app(credential=credentials.Certificate(os.environ['FIREBASE_CREDENTIALS_PATH']))
+db = firestore.client()
 
 # database
-db = firestore.client()
 wallet_status_table = db.collection(u'wallet_status')
 loan_application_status_table = db.collection(u'loan_application_status')
 loan_payment_status_table = db.collection(u'loan_payment_status')
