@@ -7,4 +7,6 @@ sseclient
 pycryptodome
 pydantic
 requests_toolbelt
-nanolib
+nanoblocks
+websockets
+dacite

@@ -50,7 +50,7 @@ class WalletStatus:
 
     def __post_init__(self):
         self.state = self.state.value
-        self.timestamp = self.timestamp.strftime('%s')
+        self.timestamp = int(self.timestamp.strftime('%s'))
  
 @dataclass
 class LoanPaymentStatus:
@@ -60,6 +60,10 @@ class LoanPaymentStatus:
     timestamp: datetime
     doc_id: str = random()
 
+    def __post_init__(self):
+        self.state = self.state.value
+        self.timestamp = int(self.timestamp.strftime('%s'))
+
 @dataclass   
 class LoanApplicationStatus:
     state: LoanApplicationState
@@ -67,6 +71,10 @@ class LoanApplicationStatus:
     previous: Union[LoanApplicationStatus, None]
     timestamp: datetime
     doc_id: str = random()
+
+    def __post_init__(self):
+        self.state = self.state.value
+        self.timestamp = int(self.timestamp.strftime('%s'))
 
 """ Entities """
 
@@ -89,7 +97,7 @@ class Wallet:
 @dataclass
 class Loan:
     principal_in_xno: float
-    loan_start_date: datetime
+    start_date: datetime
     monthly_payment: float
     monthly_interest_rate: float
     number_of_payment_periods: int
@@ -98,6 +106,9 @@ class Loan:
     principal_wallet: Wallet
     borrower: User
     doc_id: float = random()
+
+    def __post_init__(self):
+        self.start_date = int(self.start_date.strftime('%s'))
     
 @dataclass
 class Stake:
@@ -110,6 +121,9 @@ class Stake:
     number_of_payment_periods: float
     doc_id: float = random()
 
+    def __post_init__(self):
+        self.start_date = int(self.start_date.strftime('%s'))
+
 @dataclass
 class LoanPayment:
     loan: Loan
@@ -117,3 +131,6 @@ class LoanPayment:
     amount_due_in_xno: float
     status: LoanPaymentStatus
     doc_id: float = random()
+
+    def __post_init__(self):
+        self.due_date = int(self.due_date.strftime('%s'))

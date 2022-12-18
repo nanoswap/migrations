@@ -44,7 +44,7 @@ def seed_users(count_users: int):
 
 if __name__ == "__main__":
 
-    COUNT_USERS = 10
+    COUNT_USERS = 3
     COUNT_LOANS = 5
     STAKES_PER_LOAN = 3
 
