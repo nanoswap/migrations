@@ -45,7 +45,7 @@ class WalletStatus(object):
             "doc_id": self.doc_id,
             "is_frozen": self.is_frozen,
             "frozen_reason_code": self.frozen_reason_code,
-            "frozen_reason_message": self.reasons[self.frozen_reason_code]
+            "frozen_reason_message": self.reasons.get(self.frozen_reason_code)
         }
 
 class LoanApplicationStatus(object):
@@ -60,8 +60,8 @@ class LoanApplicationStatus(object):
         return {
             "doc_id": self.doc_id,
             "state": self.LoanPaymentState,
-            "next": self.LoanApplicationStatus.to_dict() if self.LoanApplicationStatus else None,
-            "previous": self.LoanApplicationStatus.to_dict() if self.LoanApplicationStatus else None,
+            "next": self.LoanApplicationStatus,
+            "previous": self.LoanApplicationStatus,
             "timestamp": self.timestamp
         }
 
@@ -77,8 +77,8 @@ class LoanPaymentStatus(object):
         return {
             "doc_id": self.doc_id,
             "state": self.LoanPaymentState,
-            "next": self.LoanApplicationStatus.to_dict() if self.LoanApplicationStatus else None,
-            "previous": self.LoanApplicationStatus.to_dict() if self.LoanApplicationStatus else None,
+            "next": self.LoanApplicationStatus,
+            "previous": self.LoanApplicationStatus,
             "timestamp": self.timestamp
         }
 
@@ -96,7 +96,7 @@ class Wallet(object):
             "doc_id": self.doc_id,
             "wallet_type": self.wallet_type,
             "address": self.address,
-            "status": self.status.to_dict()
+            "status": self.status
         }
 
 class User(object):
@@ -139,10 +139,10 @@ class Loan(object):
             "monthly_payment": self.monthly_payment,
             "monthly_interest_rate": self.monthly_interest_rate,
             "number_of_payment_periods": self.number_of_payment_periods,
-            "status": self.status.to_dict(),
-            "payment_wallet": self.payment_wallet.to_dict(),
-            "principal_wallet": self.principal_wallet.to_dict(),
-            "borrower": self.borrower.to_dict()
+            "status": self.status,
+            "payment_wallet": self.payment_wallet,
+            "principal_wallet": self.principal_wallet,
+            "borrower": self.borrower
         }
 
 class Stake(object):
@@ -167,10 +167,10 @@ class Stake(object):
     def to_dict(self):
         return {
             "doc_id": self.doc_id,
-            "owner": self.owner.to_dict(),
+            "owner": self.owner,
             "start_date": self.start_date,
-            "from_wallet": self.from_wallet.to_dict(),
-            "yield_wallet": self.yield_wallet.to_dict(),
+            "from_wallet": self.from_wallet,
+            "yield_wallet": self.yield_wallet,
             "monthly_interest_rate": self.monthly_interest_rate,
             "monthly_payment": self.monthly_payment,
             "number_of_payment_periods": self.number_of_payment_periods
@@ -187,8 +187,8 @@ class LoanPayment(object):
     def to_dict(self):
         return {
             "doc_id": self.doc_id,
-            "loan": self.loan.to_dict(),
+            "loan": self.loan,
             "due_date": self.due_date,
             "amount_due_in_xno": self.amount_due_in_xno,
-            "status": self.status.to_dict()
+            "status": self.status
         }

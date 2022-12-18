@@ -18,8 +18,8 @@ def seed_wallet_status():
     }
 
 def seed_users(wallet_status: List[schemas.WalletStatus], count_users: int):
-    for i in count_users:
-        _, cur_user = utils.insert_user(schemas.User(uid=str(i)).to_dict())
+    for i in range(count_users):
+        _, cur_user = utils.insert_user(schemas.User(uid=str(i)))
         utils.insert_wallet(schemas.Wallet(
             wallet_type=3,
             address=random.random(),
