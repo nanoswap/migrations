@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from enum import Enum
 
 
-class LoanApplicationStatus(Enum):
+class LoanApplicationState(Enum):
     DRAFT = 1
     WITHDRAWN = 2
     COLLECTING_STAKE = 3
@@ -19,18 +19,47 @@ class WalletType(Enum):
     WITHDRAW_OR_DEPOSIT = 3
     INTERNAL_ONLY = 4
 
+class LoanPaymentState(Enum):
+    SCHEDULED = 1
+    UPCOMING = 2
+    COMPLETED_ON_TIME = 3
+    LATE = 4
+    COMPLETED_LATE = 5
+    MISSED = 6
+
+class WalletStatus(object):
+    def __init__(self, is_frozen, frozen_reason_code, frozen_reason_message):
+        self.is_frozen: bool = is_frozen
+        self.frozen_reason_code: int = frozen_reason_code
+        self.frozen_reason_message: str = frozen_reason_message
+
+class LoanApplicationStatus(object):
+    def __init__(self, state, next, previous, timestamp):
+        self.state: LoanApplicationState = state
+        self.next: Union[LoanApplicationStatus, None] = next
+        self.previous: Union[LoanApplicationStatus, None] = previous
+        self.timestamp: datetime = timestamp
+
+class LoanPaymentStatus(object):
+    def __init__(self, state, next, previous, timestamp):
+        self.state: LoanPaymentState = state
+        self.next: Union[LoanPaymentStatus, None] = next
+        self.previous: Union[LoanPaymentStatus, None] = previous
+        self.timestamp: datetime = timestamp
+
 class Wallet(object):
-    def __init__(self, doc_id, wallet_type, address, key):
-        self.doc_id = doc_id
+    def __init__(self, doc_id, wallet_type, address, key, wallet_status):
+        self.doc_id: str = doc_id
         self.wallet_type: WalletType = wallet_type
         self.address: str = address
         self.key: str = key
+        self.status: WalletStatus = wallet_status
 
 class User(object):
     def __init__(self, uid):
-        self.uid = uid
+        self.uid: str = uid
 
-class LoanApplication(object):
+class Loan(object):
     def __init__(
             self,
             doc_id,
@@ -74,11 +103,9 @@ class Stake(object):
         self.monthly_payment: float = monthly_payment
         self.number_of_payment_periods: float = number_of_payment_periods
 
-
-class StakeTransfer(object):
-    def __init__(self):
-        pass
-
 class LoanPaymentEvent(object):
-    def __init__(self):
-        pass
+    def __init__(self, loan, due_date, amount_due_in_xno, status):
+        self.loan: Loan = loan
+        self.due_date: datetime = due_date
+        self.amount_due_in_xno: float = amount_due_in_xno
+        self.status: LoanPaymentStatus = status
