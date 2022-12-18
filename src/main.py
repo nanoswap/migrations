@@ -21,7 +21,7 @@ def seed_users(count_users: int):
                 is_frozen=True,
                 next=None,
                 previous=None,
-                timestamp=datetime.datetime.date()
+                timestamp=datetime.date.today()
             )
         ))
         users_added.append(cur_user)

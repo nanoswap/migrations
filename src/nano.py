@@ -1,7 +1,8 @@
-from nanolib import generate_seed, generate_account_id
+from nanoblocks.network import NanoNetwork
 
-def get_address():
-    # https://nanolib.readthedocs.io/en/latest/tutorial.html#creating-an-account
-    seed = generate_seed()
-    account_id = generate_account_id(seed, 0)
-    return account_id
+network = NanoNetwork()
+
+def get_address() -> str:
+    # https://github.com/ipazc/nanoblocks
+    wallet = network.wallets.create()
+    return ' '.join(wallet.mnemonic)
