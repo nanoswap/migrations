@@ -14,6 +14,13 @@ class WalletType(Enum):
     WITHDRAW_OR_DEPOSIT = 3, 'personal wallet'
     INTERNAL_ONLY = 4, 'internal wallet'
 
+class UserState(Enum):
+    CREATED = 1
+    VALIDATION_IN_PROGRESS = 2
+    VALIDATION_FAILED = 3
+    ACTIVE = 4
+    FROZEN = 5
+
 class WalletState(Enum):
     FROZEN_MISSING_USER_VERIFICATION = 1
     FROZEN_FRAUD_SUSPECTED = 2
@@ -38,6 +45,19 @@ class LoanPaymentState(Enum):
     MISSED = 6
 
 """ Object Status Classes (for tracking entity workflows) """
+
+@dataclass
+class UserStatus:
+    state: UserState
+    is_frozen: bool
+    next: Union[UserStatus, None]
+    previous: Union[UserStatus, None]
+    timestamp: datetime
+    doc_id: str = random()
+
+    def __post_init__(self):
+        self.state = self.state.value
+        self.timestamp = int(self.timestamp.strftime('%s'))
 
 @dataclass
 class WalletStatus:
@@ -81,6 +101,7 @@ class LoanApplicationStatus:
 @dataclass
 class User:
     uid: str
+    status: UserStatus
 
 @dataclass   
 class Wallet:

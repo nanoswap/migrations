@@ -10,7 +10,19 @@ import datetime
 def seed_users(count_users: int):
     users_added = []
     for i in range(count_users):
-        _, cur_user = crud.insert_user(schemas.User(uid=str(i)))
+
+        # create user
+        _, cur_user = crud.insert_user(schemas.User(
+            uid=str(i),
+            status=schemas.UserStatus(
+                state=schemas.UserState.CREATED,
+                is_frozen=False,
+                next=None,
+                previous=None,
+                timestamp=datetime.date.today()
+        )))
+
+        # create wallet for that user
         crud.insert_wallet(schemas.Wallet(
             owner=cur_user,
             wallet_type=schemas.WalletType.WITHDRAW_OR_DEPOSIT,
@@ -24,6 +36,7 @@ def seed_users(count_users: int):
                 timestamp=datetime.date.today()
             )
         ))
+
         users_added.append(cur_user)
     
     return users_added
