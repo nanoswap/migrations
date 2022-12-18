@@ -28,24 +28,59 @@ class LoanPaymentState(Enum):
     MISSED = 6
 
 class WalletStatus(object):
-    def __init__(self, is_frozen, frozen_reason_code, frozen_reason_message):
+
+    reasons = {
+        101: "missing_user_verification",
+        102: "fraud suspected",
+        103: "staked for loan"
+    }
+
+    def __init__(self, doc_id, is_frozen, frozen_reason_code):
+        self.doc_id: str = doc_id
         self.is_frozen: bool = is_frozen
         self.frozen_reason_code: int = frozen_reason_code
-        self.frozen_reason_message: str = frozen_reason_message
+    
+    def to_dict(self):
+        return {
+            "doc_id": self.doc_id,
+            "is_frozen": self.is_frozen,
+            "frozen_reason_code": self.frozen_reason_code,
+            "frozen_reason_message": self.reasons[self.frozen_reason_code]
+        }
 
 class LoanApplicationStatus(object):
-    def __init__(self, state, next, previous, timestamp):
+    def __init__(self, doc_id, state, next, previous, timestamp):
+        self.doc_id: str = doc_id
         self.state: LoanApplicationState = state
         self.next: Union[LoanApplicationStatus, None] = next
         self.previous: Union[LoanApplicationStatus, None] = previous
         self.timestamp: datetime = timestamp
 
+    def to_dict(self):
+        return {
+            "doc_id": self.doc_id,
+            "state": self.LoanPaymentState,
+            "next": self.LoanApplicationStatus.to_dict() if self.LoanApplicationStatus else None,
+            "previous": self.LoanApplicationStatus.to_dict() if self.LoanApplicationStatus else None,
+            "timestamp": self.timestamp
+        }
+
 class LoanPaymentStatus(object):
-    def __init__(self, state, next, previous, timestamp):
+    def __init__(self, doc_id, state, next, previous, timestamp):
+        self.doc_id: str = doc_id,
         self.state: LoanPaymentState = state
         self.next: Union[LoanPaymentStatus, None] = next
         self.previous: Union[LoanPaymentStatus, None] = previous
         self.timestamp: datetime = timestamp
+        
+    def to_dict(self):
+        return {
+            "doc_id": self.doc_id,
+            "state": self.LoanPaymentState,
+            "next": self.LoanApplicationStatus.to_dict() if self.LoanApplicationStatus else None,
+            "previous": self.LoanApplicationStatus.to_dict() if self.LoanApplicationStatus else None,
+            "timestamp": self.timestamp
+        }
 
 class Wallet(object):
     def __init__(self, doc_id, wallet_type, address, key, wallet_status):
@@ -54,10 +89,24 @@ class Wallet(object):
         self.address: str = address
         self.key: str = key
         self.status: WalletStatus = wallet_status
+        
+    def to_dict(self):
+        # do not return key in responses
+        return {
+            "doc_id": self.doc_id,
+            "wallet_type": self.wallet_type,
+            "address": self.address,
+            "status": self.status.to_dict()
+        }
 
 class User(object):
     def __init__(self, uid):
         self.uid: str = uid
+        
+    def to_dict(self):
+        return {
+            "uid": self.uid
+        }
 
 class Loan(object):
     def __init__(
@@ -82,6 +131,20 @@ class Loan(object):
         self.payment_wallet: Wallet = payment_wallet
         self.principal_wallet: Wallet = principal_wallet
         self.borrower: User = borrower
+        
+    def to_dict(self):
+        return {
+            "doc_id": self.doc_id,
+            "principal_in_xno": self.principal_in_xno,
+            "loan_start_date": self.loan_start_date,
+            "monthly_payment": self.monthly_payment,
+            "monthly_interest_rate": self.monthly_interest_rate,
+            "number_of_payment_periods": self.number_of_payment_periods,
+            "status": self.status.to_dict(),
+            "payment_wallet": self.payment_wallet.to_dict(),
+            "principal_wallet": self.principal_wallet.to_dict(),
+            "borrower": self.borrower.to_dict()
+        }
 
 class Stake(object):
     def __init__(
@@ -96,16 +159,38 @@ class Stake(object):
             number_of_payment_periods):
         self.doc_id: str = doc_id
         self.owner: User = owner
-        self.stake_start_date: datetime = stake_start_date
-        self.stake_from_wallet: Wallet = stake_from_wallet
+        self.start_date: datetime = stake_start_date
+        self.from_wallet: Wallet = stake_from_wallet
         self.yield_wallet: Wallet = yield_wallet
         self.monthly_interest_rate: float = monthly_interest_rate
         self.monthly_payment: float = monthly_payment
         self.number_of_payment_periods: float = number_of_payment_periods
+        
+    def to_dict(self):
+        return {
+            "doc_id": self.doc_id,
+            "owner": self.owner.to_dict(),
+            "start_date": self.start_date,
+            "from_wallet": self.from_wallet.to_dict(),
+            "yield_wallet": self.yield_wallet.to_dict(),
+            "monthly_interest_rate": self.monthly_interest_rate,
+            "monthly_payment": self.monthly_payment,
+            "number_of_payment_periods": self.number_of_payment_periods
+        }
 
-class LoanPaymentEvent(object):
-    def __init__(self, loan, due_date, amount_due_in_xno, status):
+class LoanPayment(object):
+    def __init__(self, doc_id, loan, due_date, amount_due_in_xno, status):
+        self.doc_id: str = doc_id
         self.loan: Loan = loan
         self.due_date: datetime = due_date
         self.amount_due_in_xno: float = amount_due_in_xno
         self.status: LoanPaymentStatus = status
+        
+    def to_dict(self):
+        return {
+            "doc_id": self.doc_id,
+            "loan": self.loan.to_dict(),
+            "due_date": self.due_date,
+            "amount_due_in_xno": self.amount_due_in_xno,
+            "status": self.status.to_dict()
+        }
