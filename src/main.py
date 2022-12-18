@@ -41,10 +41,26 @@ def seed_users(count_users: int):
     
     return users_added
 
-# seed loans and create stake/payment data for each laon
+# seed loans and create stake/payment data for each loan
 
-# def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int):
-#     cur_loan = None
+def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int):
+    for i in range(count_loans):
+
+        _, cur_loan = crud.insert_loan(schemas.Loan(
+            principal_in_xno=random(),
+            start_date=datetime.date.today(),
+            monthly_payment=random(),
+            number_of_payment_periods=random(),
+            status=schemas.LoanApplicationStatus(
+                state=schemas.LoanApplicationState.DRAFT,
+                next=None,
+                previous=None,
+                timestamp=datetime.date.today()
+            ),
+            payment_wallet=schemas.Wallet(),
+            principal_wallet=schemas.Wallet(),
+            borrower=schemas.User()
+        ))
 
 #     seed_stakes(cur_loan)
 #     seed_payments(cur_loan)
@@ -62,4 +78,4 @@ if __name__ == "__main__":
     STAKES_PER_LOAN = 3
 
     users = seed_users(COUNT_USERS)
-    # loans = seed_loans(users, COUNT_LOANS, STAKES_PER_LOAN)
+    loans = seed_loans(users, COUNT_LOANS, STAKES_PER_LOAN)

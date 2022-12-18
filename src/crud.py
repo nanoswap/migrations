@@ -31,10 +31,8 @@ def insert_wallet(data: schemas.Wallet) -> Tuple[Timestamp, Any]:
 def insert_user(data: schemas.User) -> Tuple[Timestamp, Any]:
     return user_table.add(asdict(data))
 
-
-
-# def insert_loan(data: schemas.Loan) -> Tuple[Timestamp, Any]:
-#     return loan_table.add(asdict(data))
+def insert_loan(data: schemas.Loan) -> Tuple[Timestamp, Any]:
+    return loan_table.add(asdict(data))
 
 # def insert_stake(data: schemas.Stake) -> Tuple[Timestamp, Any]:
 #     return stake_table.add(asdict(data))
