@@ -23,10 +23,13 @@ loan_table = db.collection(u'loan')
 stake_table = db.collection(u'stake')
 loan_payment_table = db.collection(u'loan_payment_event')
 
+def insert_internal_wallet(wallet: schemas.Wallet) -> Tuple[Timestamp, Any]:
+    assert wallet.wallet_type == schemas.WalletType.INTERNAL_ONLY.value
+    return wallet_table.add(asdict(wallet))
 
-
-def insert_wallet(data: schemas.Wallet) -> Tuple[Timestamp, Any]:
-    return wallet_table.add(asdict(data))
+def insert_new_wallet_for_user(wallet: schemas.Wallet, user: schemas.User):
+    _, wallet_ref = wallet_table.add(asdict(wallet))
+    user.update({u'wallets': firestore.ArrayUnion([wallet_ref])})
 
 def insert_user(data: schemas.User) -> Tuple[Timestamp, Any]:
     return user_table.add(asdict(data))

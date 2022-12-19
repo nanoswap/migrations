@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import Union
-from datetime import datetime
+from typing import Union, List
+from datetime import datetime, date
 from enum import Enum
-from dataclasses import dataclass, asdict, fields
+from dataclasses import dataclass, asdict, fields, field
 from dacite import from_dict
 from random import random
 
@@ -101,15 +101,27 @@ class LoanApplicationStatus:
 @dataclass
 class User:
     uid: str
-    status: UserStatus
+    wallets: List[Wallet] = field(default_factory=list)
+    status: UserStatus = UserStatus(
+        state=UserState.CREATED,
+        is_frozen=True,
+        next=None,
+        previous=None,
+        timestamp=date.today()
+    )
 
 @dataclass   
 class Wallet:
-    owner: Union[User, None]
     wallet_type: WalletType
     address: str
-    key: Union[str, None]
-    status: WalletStatus
+    key: Union[str, None] = None
+    status: WalletStatus = WalletStatus(
+        state=WalletState.FROZEN_MISSING_USER_VERIFICATION,
+        is_frozen=True,
+        next=None,
+        previous=None,
+        timestamp=date.today()
+    )
     doc_id: float = random()
 
     def __post_init__(self):
@@ -122,10 +134,15 @@ class Loan:
     monthly_payment: float
     monthly_interest_rate: float
     number_of_payment_periods: int
-    status: LoanApplicationStatus
     payment_wallet: Wallet
     principal_wallet: Wallet
     borrower: User
+    status: LoanApplicationStatus = LoanApplicationStatus(
+        state=LoanApplicationState.DRAFT,
+        next=None,
+        previous=None,
+        timestamp=date.today()
+    )
     doc_id: float = random()
 
     def __post_init__(self):
@@ -150,7 +167,12 @@ class LoanPayment:
     loan: Loan
     due_date: datetime
     amount_due_in_xno: float
-    status: LoanPaymentStatus
+    status: LoanPaymentStatus = LoanPaymentStatus(
+        state=LoanPaymentState.SCHEDULED,
+        next=None,
+        previous=None,
+        timestamp=date.today()
+    )
     doc_id: float = random()
 
     def __post_init__(self):

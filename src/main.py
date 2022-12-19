@@ -4,6 +4,7 @@ import crud
 import nano
 import random
 import datetime
+from datetime import date
 
 # seed users and create wallets for each user
 
@@ -12,31 +13,13 @@ def seed_users(count_users: int):
     for i in range(count_users):
 
         # create user
-        _, cur_user = crud.insert_user(schemas.User(
-            uid=str(i),
-            status=schemas.UserStatus(
-                state=schemas.UserState.CREATED,
-                is_frozen=False,
-                next=None,
-                previous=None,
-                timestamp=datetime.date.today()
-        )))
-
-        # create wallet for that user
-        crud.insert_wallet(schemas.Wallet(
-            owner=cur_user,
+        _, cur_user = crud.insert_user(schemas.User(uid=str(i)))
+        personal_wallet = schemas.Wallet(
             wallet_type=schemas.WalletType.WITHDRAW_OR_DEPOSIT,
-            address=nano.get_address(),
-            key=None,
-            status=schemas.WalletStatus(
-                state=schemas.WalletState.FROZEN_MISSING_USER_VERIFICATION,
-                is_frozen=True,
-                next=None,
-                previous=None,
-                timestamp=datetime.date.today()
-            )
-        ))
+            address=nano.get_address()
+        )
 
+        crud.insert_new_wallet_for_user(personal_wallet, cur_user)
         users_added.append(cur_user)
     
     return users_added
@@ -44,26 +27,39 @@ def seed_users(count_users: int):
 # seed loans and create stake/payment data for each loan
 
 def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int):
+
+    loans = []
+
     for i in range(count_loans):
 
+        assert len(users) > 0
+        borrower = random.sample(users, 1)[0]
+        internal_loan_liquidity_wallet = schemas.Wallet(
+            wallet_type=schemas.WalletType.INTERNAL_ONLY,
+            address=nano.get_address()
+        )
+        bill_pay_wallet = schemas.Wallet(
+            wallet_type=schemas.WalletType.DEPOSIT_ONLY,
+            address=nano.get_address()
+        )
+
+        crud.insert_internal_wallet(internal_loan_liquidity_wallet)
+        crud.insert_new_wallet_for_user(bill_pay_wallet, borrower)
+
         _, cur_loan = crud.insert_loan(schemas.Loan(
-            principal_in_xno=random(),
-            start_date=datetime.date.today(),
-            monthly_payment=random(),
-            number_of_payment_periods=random(),
-            status=schemas.LoanApplicationStatus(
-                state=schemas.LoanApplicationState.DRAFT,
-                next=None,
-                previous=None,
-                timestamp=datetime.date.today()
-            ),
-            payment_wallet=schemas.Wallet(),
-            principal_wallet=schemas.Wallet(),
-            borrower=schemas.User()
+            principal_in_xno=random.random(),
+            start_date=date.today(),
+            monthly_payment=random.random(),
+            monthly_interest_rate=random.random(),
+            number_of_payment_periods=random.random(),
+            payment_wallet=bill_pay_wallet,
+            principal_wallet=internal_loan_liquidity_wallet,
+            borrower=borrower
         ))
 
-#     seed_stakes(cur_loan)
-#     seed_payments(cur_loan)
+        loans.append(cur_loan)
+    
+    return loans
 
 # def seed_stakes(loan: schemas.Loan):
 #     pass
