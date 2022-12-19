@@ -32,8 +32,11 @@ def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int
 
     for i in range(count_loans):
 
+        # choose a random borrower
         assert len(users) > 0
         borrower = random.sample(users, 1)[0]
+
+        # create wallets
         internal_loan_liquidity_wallet = schemas.Wallet(
             wallet_type=schemas.WalletType.INTERNAL_ONLY,
             address=nano.get_address()
@@ -46,6 +49,7 @@ def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int
         crud.insert_internal_wallet(internal_loan_liquidity_wallet)
         crud.insert_new_wallet_for_user(bill_pay_wallet, borrower)
 
+        # create the loan
         _, cur_loan = crud.insert_loan(schemas.Loan(
             principal_in_xno=random.random(),
             start_date=date.today(),
@@ -61,11 +65,11 @@ def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int
     
     return loans
 
-# def seed_stakes(loan: schemas.Loan):
-#     pass
+def seed_stakes(loan: schemas.Loan):
+    pass
 
-# def seed_payments(loan: schemas.Loan):
-#     pass
+def seed_payments(loan: schemas.Loan):
+    pass
 
 if __name__ == "__main__":
 
