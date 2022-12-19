@@ -9,10 +9,10 @@ from random import random
 """ Enums """
 
 class WalletType(Enum):
-    WITHDRAW_ONLY = 1, 'yield wallet'
-    DEPOSIT_ONLY = 2, 'bill pay wallet'
-    WITHDRAW_OR_DEPOSIT = 3, 'personal wallet'
-    INTERNAL_ONLY = 4, 'internal wallet'
+    WITHDRAW_ONLY = 1  # yield wallet
+    DEPOSIT_ONLY = 2  # bill pay wallet
+    WITHDRAW_OR_DEPOSIT = 3  # personal wallet
+    INTERNAL_ONLY = 4  # internal wallet
 
 class UserState(Enum):
     CREATED = 1
@@ -44,7 +44,7 @@ class LoanPaymentState(Enum):
     COMPLETED_LATE = 5
     MISSED = 6
 
-""" Object Status Classes (for tracking entity workflows) """
+""" Object Status Class (for tracking entity workflows) """
 
 @dataclass
 class State:
@@ -63,25 +63,15 @@ class State:
 @dataclass
 class User:
     uid: str
+    status: State
     wallets: List[Wallet] = field(default_factory=list)
-    status: State = State(
-        state=UserState.CREATED,
-        next=None,
-        previous=None,
-        timestamp=date.today()
-    )
 
 @dataclass   
 class Wallet:
     wallet_type: WalletType
     address: str
+    status: State
     key: Union[str, None] = None
-    status: State = State(
-        state=WalletState.FROZEN_MISSING_USER_VERIFICATION,
-        next=None,
-        previous=None,
-        timestamp=date.today()
-    )
     doc_id: float = random()
 
     def __post_init__(self):
@@ -97,12 +87,7 @@ class Loan:
     payment_wallet: Wallet
     principal_wallet: Wallet
     borrower: User
-    status: State = State(
-        state=LoanApplicationState.DRAFT,
-        next=None,
-        previous=None,
-        timestamp=date.today()
-    )
+    status: State
     doc_id: float = random()
 
     def __post_init__(self):
@@ -127,12 +112,7 @@ class LoanPayment:
     loan: Loan
     due_date: datetime
     amount_due_in_xno: float
-    status: State = State(
-        state=LoanPaymentState.SCHEDULED,
-        next=None,
-        previous=None,
-        timestamp=date.today()
-    )
+    status: State
     doc_id: float = random()
 
     def __post_init__(self):
