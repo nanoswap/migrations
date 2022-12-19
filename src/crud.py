@@ -37,6 +37,12 @@ def insert_user(data: schemas.User) -> Tuple[Timestamp, Any]:
 def insert_loan(data: schemas.Loan) -> Tuple[Timestamp, Any]:
     return loan_table.add(asdict(data))
 
+def verify_user(user: schemas.User):
+    user.update(u'status.next': )
+
+def update_user_state(status_obj: schemas.UserStatus, old_state: schemas.UserState, new_state: schemas.UserState):
+    pass
+
 # def insert_stake(data: schemas.Stake) -> Tuple[Timestamp, Any]:
 #     return stake_table.add(asdict(data))
 

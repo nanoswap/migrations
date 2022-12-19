@@ -47,48 +47,10 @@ class LoanPaymentState(Enum):
 """ Object Status Classes (for tracking entity workflows) """
 
 @dataclass
-class UserStatus:
-    state: UserState
-    is_frozen: bool
-    next: Union[UserStatus, None]
-    previous: Union[UserStatus, None]
-    timestamp: datetime
-    doc_id: str = random()
-
-    def __post_init__(self):
-        self.state = self.state.value
-        self.timestamp = int(self.timestamp.strftime('%s'))
-
-@dataclass
-class WalletStatus:
-    state: WalletState
-    is_frozen: bool
-    next: Union[WalletStatus, None]
-    previous: Union[WalletStatus, None]
-    timestamp: datetime
-    doc_id: str = random()
-
-    def __post_init__(self):
-        self.state = self.state.value
-        self.timestamp = int(self.timestamp.strftime('%s'))
- 
-@dataclass
-class LoanPaymentStatus:
-    state: LoanPaymentState
-    next: Union[LoanPaymentStatus, None]
-    previous: Union[LoanPaymentStatus, None]
-    timestamp: datetime
-    doc_id: str = random()
-
-    def __post_init__(self):
-        self.state = self.state.value
-        self.timestamp = int(self.timestamp.strftime('%s'))
-
-@dataclass   
-class LoanApplicationStatus:
-    state: LoanApplicationState
-    next: Union[LoanApplicationStatus, None]
-    previous: Union[LoanApplicationStatus, None]
+class State:
+    state: Enum
+    next: Union[State, None]
+    previous: Union[State, None]
     timestamp: datetime
     doc_id: str = random()
 
@@ -102,9 +64,8 @@ class LoanApplicationStatus:
 class User:
     uid: str
     wallets: List[Wallet] = field(default_factory=list)
-    status: UserStatus = UserStatus(
+    status: State = State(
         state=UserState.CREATED,
-        is_frozen=True,
         next=None,
         previous=None,
         timestamp=date.today()
@@ -115,9 +76,8 @@ class Wallet:
     wallet_type: WalletType
     address: str
     key: Union[str, None] = None
-    status: WalletStatus = WalletStatus(
+    status: State = State(
         state=WalletState.FROZEN_MISSING_USER_VERIFICATION,
-        is_frozen=True,
         next=None,
         previous=None,
         timestamp=date.today()
@@ -137,7 +97,7 @@ class Loan:
     payment_wallet: Wallet
     principal_wallet: Wallet
     borrower: User
-    status: LoanApplicationStatus = LoanApplicationStatus(
+    status: State = State(
         state=LoanApplicationState.DRAFT,
         next=None,
         previous=None,
@@ -167,7 +127,7 @@ class LoanPayment:
     loan: Loan
     due_date: datetime
     amount_due_in_xno: float
-    status: LoanPaymentStatus = LoanPaymentStatus(
+    status: State = State(
         state=LoanPaymentState.SCHEDULED,
         next=None,
         previous=None,

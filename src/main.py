@@ -65,6 +65,15 @@ def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int
     
     return loans
 
+def complete_user_verification(users: List[schemas.User], count_verified_users: int):
+    
+    assert count_verified_users < len(users)
+
+    # choose which users to verify
+    users_to_verify = random.sample(users, count_verified_users)
+    for user in users_to_verify:
+        crud.verify_user(user)
+
 def seed_stakes(loan: schemas.Loan):
     pass
 
@@ -74,8 +83,11 @@ def seed_payments(loan: schemas.Loan):
 if __name__ == "__main__":
 
     COUNT_USERS = 3
+    COUNT_VERIFIED_USERS = 2
     COUNT_LOANS = 5
     STAKES_PER_LOAN = 3
 
+
     users = seed_users(COUNT_USERS)
     loans = seed_loans(users, COUNT_LOANS, STAKES_PER_LOAN)
+    verified_users = complete_user_verification(users, COUNT_VERIFIED_USERS)
