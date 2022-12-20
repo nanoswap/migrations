@@ -11,11 +11,15 @@ import numpy as np
 
 def seed_users(count_users: int):
     users_added = []
+
+    firebase_users = [crud.create_firebase_user(i) for i in range(count_users)]
+    crud.import_firebase_users(firebase_users)
+
     for i in range(count_users):
 
         # create user
         _, cur_user = crud.insert_user(schemas.User(
-            uid=str(i),
+            uid=firebase_users[i].uid,
             status=crud.initial_user_state()
         ))
 
@@ -64,10 +68,12 @@ def seed_loans(users: List[schemas.User], count_loans: int):
         amount = random.sample(range(10, 100, 5), 1)[0]
         payment_periods = random.sample(range(5, 50, 5), 1)[0]
         monthly_interest = random.sample(list(np.arange(1.05,1.20,0.05)), 1)[0]
+        monthly_payment = (amount / payment_periods) * monthly_interest
+        start_date = date.today()
         _, cur_loan = crud.insert_loan(schemas.Loan(
             principal_in_xno=amount,
-            start_date=date.today(),
-            monthly_payment= (amount / payment_periods) * monthly_interest,
+            start_date=start_date,
+            monthly_payment=monthly_payment,
             monthly_interest_rate=monthly_interest,
             number_of_payment_periods=payment_periods,
             payment_wallet=bill_pay_wallet_ref,
@@ -75,6 +81,9 @@ def seed_loans(users: List[schemas.User], count_loans: int):
             borrower=borrower,
             status=crud.initial_loan_state()
         ))
+
+        # only seed payments for loans that are transitioned to stake?
+        # seed_payments(cur_loan, monthly_payment, payment_periods, start_date)
 
         loans.append(cur_loan)
     
@@ -87,25 +96,16 @@ def setup_states(objects: List[object], states: dict):
     count = 0
     for state in states:
 
-        # create n users in each state
+        # create n object status' in each state
         for _ in range(states[state]):
             crud.status_update(objects[count], state)
             count += 1
 
-# def complete_user_verification(users: List[schemas.User], count_verified_users: int):
-    
-#     assert count_verified_users < len(users)
-
-#     # choose which users to verify
-#     users_to_verify = random.sample(users, count_verified_users)
-#     for user in users_to_verify:
-#         crud.verify_user(user)
-
 def seed_stakes(loan: schemas.Loan):
     pass
 
-def seed_payments(loan: schemas.Loan):
-    pass
+# def seed_payments(loan: schemas.Loan):
+#     pass
 
 if __name__ == "__main__":
 
@@ -145,6 +145,18 @@ if __name__ == "__main__":
 
     COUNT_USERS = sum(user_states.values())
     COUNT_LOANS = sum(loan_states.values())
+
+    # get total amount to stake?
+    # create callback function on state transition and create
+    #    stake when transitioning to the fully funded state?
+    FULLY_STAKED_LOANS = \
+        loan_states[schemas.LoanApplicationState.FULLY_FUNDED] + \
+        loan_states[schemas.LoanApplicationState.IN_PROGRESS] + \
+        loan_states[schemas.LoanApplicationState.COMPLETE] + \
+        loan_states[schemas.LoanApplicationState.DEFAULT]
+    
+    PARTIALLY_STAKED_LOANS = \
+        loan_states[schemas.LoanApplicationState.COLLECTING_STAKE]
 
     users = seed_users(COUNT_USERS)
     setup_states(users, user_states)

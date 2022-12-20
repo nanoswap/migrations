@@ -1,4 +1,4 @@
-from firebase_admin import firestore, auth, credentials, initialize_app
+from firebase_admin import firestore, auth, credentials, initialize_app, exceptions
 from google.protobuf.timestamp_pb2 import Timestamp
 from typing import Tuple, Any
 from enum import Enum
@@ -73,6 +73,25 @@ def initial_loan_payment_state() -> Tuple[Timestamp, Any]:
     return ret
 
 """ end initial states """
+
+def create_firebase_user(i: int):
+    return auth.ImportUserRecord(
+        uid=f'uid{i}',
+        email=f'user{i}@example.com',
+        password_hash=b'password_hash_' + i.to_bytes(2, 'big'),
+        password_salt=b'salt' + i.to_bytes(2, 'big')
+    )
+
+def import_firebase_users(users):
+    hash_alg = auth.UserImportHash.hmac_sha256(key=b'secret_key')
+    try:
+        result = auth.import_users(users, hash_alg=hash_alg)
+        print('Successfully imported {0} users. Failed to import {1} users.'.format(
+            result.success_count, result.failure_count))
+        for err in result.errors:
+            print('Failed to import {0} due to {1}'.format(users[err.index].uid, err.reason))
+    except exceptions.FirebaseError as e:
+        print(f'Unrecoverable error: {e}')
 
 def insert_internal_wallet(wallet: schemas.Wallet) -> Tuple[Timestamp, Any]:
     assert wallet.wallet_type == schemas.WalletType.INTERNAL_ONLY.value
