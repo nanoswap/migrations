@@ -1,6 +1,7 @@
 from firebase_admin import firestore, auth, credentials, initialize_app
 from google.protobuf.timestamp_pb2 import Timestamp
 from typing import Tuple, Any
+from enum import Enum
 from dotenv import load_dotenv
 from dataclasses import dataclass, asdict, fields
 from dacite import from_dict
@@ -90,6 +91,17 @@ def insert_loan(data: schemas.Loan) -> Tuple[Timestamp, Any]:
 
 def insert_state(data: schemas.State) -> Tuple[Timestamp, Any]:
     return state_table.add(asdict(data))
+
+def status_update(data: object, new_state: Enum):
+    old_status = data.get().to_dict().get('status')
+    _, new_status_ref = state_table.add(asdict(schemas.State(
+        state = new_state,
+        next = None,
+        previous = old_status,
+        timestamp = datetime.date.today()
+    )))
+    old_status.update({u'next': new_status_ref})
+    data.update({u'status': new_status_ref})
 
 # def append_state(old_state: schemas.State, new_state: schemas.State, parent: object):
 #     # user.update(u'status.next': )

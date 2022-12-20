@@ -5,6 +5,7 @@ import nano
 import random
 import datetime
 from datetime import date
+import numpy as np
 
 # seed users and create wallets for each user
 
@@ -33,7 +34,7 @@ def seed_users(count_users: int):
 
 # seed loans and create stake/payment data for each loan
 
-def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int):
+def seed_loans(users: List[schemas.User], count_loans: int):
 
     loans = []
 
@@ -60,12 +61,15 @@ def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int
         _, bill_pay_wallet_ref = crud.insert_new_wallet_for_user(bill_pay_wallet, borrower)
 
         # create the loan
+        amount = random.sample(range(10, 100, 5), 1)[0]
+        payment_periods = random.sample(range(5, 50, 5), 1)[0]
+        monthly_interest = random.sample(list(np.arange(1.05,1.20,0.05)), 1)[0]
         _, cur_loan = crud.insert_loan(schemas.Loan(
-            principal_in_xno=random.random(),
+            principal_in_xno=amount,
             start_date=date.today(),
-            monthly_payment=random.random(),
-            monthly_interest_rate=random.random(),
-            number_of_payment_periods=random.random(),
+            monthly_payment= (amount / payment_periods) * monthly_interest,
+            monthly_interest_rate=monthly_interest,
+            number_of_payment_periods=payment_periods,
             payment_wallet=bill_pay_wallet_ref,
             principal_wallet=internal_wallet_ref,
             borrower=borrower,
@@ -75,6 +79,18 @@ def seed_loans(users: List[schemas.User], count_loans: int, stakes_per_loan: int
         loans.append(cur_loan)
     
     return loans
+
+def setup_states(objects: List[object], states: dict):
+    assert len(objects) == sum(states.values())
+
+    # iterate each state
+    count = 0
+    for state in states:
+
+        # create n users in each state
+        for _ in range(states[state]):
+            crud.status_update(objects[count], state)
+            count += 1
 
 # def complete_user_verification(users: List[schemas.User], count_verified_users: int):
     
@@ -93,12 +109,45 @@ def seed_payments(loan: schemas.Loan):
 
 if __name__ == "__main__":
 
-    COUNT_USERS = 3
-    COUNT_VERIFIED_USERS = 2
-    COUNT_LOANS = 5
-    STAKES_PER_LOAN = 3
+    user_states = {
+        schemas.UserState.CREATED: 10,
+        schemas.UserState.VALIDATION_IN_PROGRESS: 10,
+        schemas.UserState.VALIDATION_FAILED: 10,
+        schemas.UserState.ACTIVE: 10,
+        schemas.UserState.FROZEN: 10
+    }
 
+    wallet_states = {
+        schemas.WalletState.FROZEN_MISSING_USER_VERIFICATION: 10,
+        schemas.WalletState.FROZEN_STAKED_FOR_LOAN: 10,
+        schemas.WalletState.FROZEN_FRAUD_SUSPECTED: 10,
+        schemas.WalletState.VALID_ACTIVE_WALLET: 10
+    }
+
+    loan_states = {
+        schemas.LoanApplicationState.DRAFT: 10,
+        schemas.LoanApplicationState.WITHDRAWN: 10,
+        schemas.LoanApplicationState.COLLECTING_STAKE: 10,
+        schemas.LoanApplicationState.IN_PROGRESS: 10,
+        schemas.LoanApplicationState.FULLY_FUNDED: 10,
+        schemas.LoanApplicationState.COMPLETE: 10,
+        schemas.LoanApplicationState.DEFAULT: 10
+    }
+
+    loan_payment_states = {
+        schemas.LoanPaymentState.SCHEDULED: 10,
+        schemas.LoanPaymentState.UPCOMING: 10,
+        schemas.LoanPaymentState.COMPLETED_ON_TIME: 10,
+        schemas.LoanPaymentState.COMPLETED_LATE: 10,
+        schemas.LoanPaymentState.LATE: 10,
+        schemas.LoanPaymentState.MISSED: 10
+    }
+
+    COUNT_USERS = sum(user_states.values())
+    COUNT_LOANS = sum(loan_states.values())
 
     users = seed_users(COUNT_USERS)
-    loans = seed_loans(users, COUNT_LOANS, STAKES_PER_LOAN)
+    setup_states(users, user_states)
+    loans = seed_loans(users, COUNT_LOANS)
+    setup_states(loans, loan_states)
     # verified_users = complete_user_verification(users, COUNT_VERIFIED_USERS)

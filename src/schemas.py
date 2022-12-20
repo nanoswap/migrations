@@ -66,7 +66,7 @@ class User:
     status: State
     wallets: List[Wallet] = field(default_factory=list)
 
-@dataclass   
+@dataclass
 class Wallet:
     wallet_type: WalletType
     address: str
