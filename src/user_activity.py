@@ -42,3 +42,9 @@ class UserActivity:
                 next_states[next_state]['on_change_callback'](self.ref)
                 print(f"User: {self.uid}, Old State: {self.state}, New State: {next_state}")
                 self.state = next_state
+
+        # perform other user actions randomly
+        actions = state_changes.user_activity_config
+        for action in actions:
+            if random.random() < actions[action]['probability']:
+                actions[action]["on_change_callback"](self.ref)
