@@ -1,0 +1,12 @@
+python-dotenv
+python-jwt
+firebase
+firebase_admin
+gcloud
+sseclient
+pycryptodome
+pydantic
+requests_toolbelt
+nanoblocks
+websockets
+dacite
