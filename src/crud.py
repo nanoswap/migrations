@@ -5,6 +5,10 @@ from enum import Enum
 from dotenv import load_dotenv
 from dataclasses import dataclass, asdict, fields
 from dacite import from_dict
+from faker import Faker
+
+Faker.seed(0)
+fake = Faker()
 
 from pathlib import Path
 import os
@@ -27,7 +31,7 @@ loan_payment_table = db.collection(u'loan_payment_event')
 
 """ initial states """
 
-def active_wallet_state() -> Tuple[Timestamp, Any]:
+def active_wallet_state():
     _, ret = insert_state(schemas.State(
         state=schemas.WalletState.VALID_ACTIVE_WALLET,
         next=None,
@@ -36,7 +40,7 @@ def active_wallet_state() -> Tuple[Timestamp, Any]:
     ))
     return ret
 
-def initial_wallet_state() -> Tuple[Timestamp, Any]:
+def initial_wallet_state():
     _, ret = insert_state(schemas.State(
         state=schemas.WalletState.FROZEN_MISSING_USER_VERIFICATION,
         next=None,
@@ -45,16 +49,16 @@ def initial_wallet_state() -> Tuple[Timestamp, Any]:
     ))
     return ret
 
-def initial_user_state() -> Tuple[Timestamp, Any]:
+def initial_user_state():
     _, ret = insert_state(schemas.State(
         state=schemas.UserState.CREATED,
         next=None,
         previous=None,
         timestamp=datetime.date.today()
     ))
-    return ret
+    return ret, schemas.UserState.CREATED
 
-def initial_loan_state() -> Tuple[Timestamp, Any]:
+def initial_loan_state():
     _, ret = insert_state(schemas.State(
         state=schemas.LoanApplicationState.DRAFT,
         next=None,
@@ -63,7 +67,7 @@ def initial_loan_state() -> Tuple[Timestamp, Any]:
     ))
     return ret
 
-def initial_loan_payment_state() -> Tuple[Timestamp, Any]:
+def initial_loan_payment_state():
     _, ret = insert_state(schemas.State(
         state=schemas.LoanPaymentState.SCHEDULED,
         next=None,
@@ -74,12 +78,12 @@ def initial_loan_payment_state() -> Tuple[Timestamp, Any]:
 
 """ end initial states """
 
-def create_firebase_user(i: int):
+def create_firebase_user():
     return auth.ImportUserRecord(
-        uid=f'uid{i}',
-        email=f'user{i}@example.com',
-        password_hash=b'password_hash_' + i.to_bytes(2, 'big'),
-        password_salt=b'salt' + i.to_bytes(2, 'big')
+        uid=fake.uuid4(),
+        email=fake.unique.email(),
+        password_hash=bytes(fake.password(length=12), 'utf-8'),
+        password_salt=bytes(fake.sha1(raw_output=False), 'utf-8')
     )
 
 def import_firebase_users(users):
