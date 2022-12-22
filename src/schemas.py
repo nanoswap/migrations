@@ -49,6 +49,7 @@ class LoanPaymentState(Enum):
 @dataclass
 class State:
     state: Enum
+    enum_type: type
     next: Union[State, None]
     previous: Union[State, None]
     timestamp: datetime
@@ -57,6 +58,14 @@ class State:
     def __post_init__(self):
         self.state = self.state.value
         self.timestamp = int(self.timestamp.strftime('%s'))
+    
+    def __repr__(self):
+        return {
+            "state": self.enum_type(self.state),
+            "next": self.next,
+            "previous": self.previous,
+            "timestamp": self.timestamp
+        }
 
 """ Entities """
 

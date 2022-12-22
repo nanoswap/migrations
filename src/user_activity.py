@@ -1,15 +1,20 @@
+from __future__ import annotations
 import crud
 import schemas
 import state_changes
 import nano
 import random
 from enum import Enum
+import os
+from typing import List
 
 class UserActivity:
     status: schemas.State
     state: Enum
     ref: object  # firestore DocumentReference
     uid: str
+
+    """ function for simulation activity """
 
     def __init__(self):
 
@@ -48,3 +53,46 @@ class UserActivity:
         for action in actions:
             if random.random() < actions[action]['probability']:
                 actions[action]["on_change_callback"](self.ref)
+
+    """ functions for collecting results of the simulation """
+
+    def get_stats(self):
+        state_transitions = crud.get_state_transition_history(self.ref)
+        return {
+            "user": self.uid,
+            "date_created": crud.get_user_created_date(self.ref),
+            "date_validated": crud.get_user_validated_date(self.ref),
+            "current_status": state_transitions[0],
+            "state_transition_history": state_transitions
+        }
+    
+    @staticmethod
+    def get_state_data(state_ref):
+        node_data = state_ref.get().to_dict()
+        return {
+            'timestamp': node_data['timestamp'],
+            'state': schemas.UserState(node_data['state'])
+        }
+
+    @staticmethod
+    def get_state_transition_history(current_state: schemas.State) -> List[schemas.State]:
+        previous_state = crud.traverse_state(current_state, schemas.UserState)
+        history = [UserActivity.get_state_data(current_state),]
+
+        while(previous_state):
+            history.append(UserActivity.get_state_data(previous_state))
+            current_state = previous_state
+            previous_state = crud.traverse_state(current_state, schemas.UserState)
+
+        return history
+
+    @staticmethod
+    def create_csv():
+        header = "user, date created, date validated, current status, state transition history"
+        for user in crud.get_all_users():
+            user_data = user.to_dict()
+            user_state = crud.get_current_state(user.reference)
+            transition_history = UserActivity.get_state_transition_history(user_state)
+            print(transition_history)
+            print()
+            print()
