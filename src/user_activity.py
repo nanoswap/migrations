@@ -87,12 +87,36 @@ class UserActivity:
         return history
 
     @staticmethod
+    def find_validation_date(transition_history: List[dict]):
+        for node in transition_history:
+            if node["state"] == schemas.UserState.ACTIVE:
+                return node["timestamp"]
+        
+        return None
+
+    @staticmethod
     def create_csv():
-        header = "user, date created, date validated, current status, state transition history"
+        header = [
+            "user",
+            "date created",
+            "date validated",
+            "current status",
+            "state transition history"
+        ]
+
+        rows = [header,]
+
         for user in crud.get_all_users():
             user_data = user.to_dict()
             user_state = crud.get_current_state(user.reference)
             transition_history = UserActivity.get_state_transition_history(user_state)
-            print(transition_history)
-            print()
-            print()
+            transition_history.reverse()
+            rows.append([
+                user_data["uid"],
+                transition_history[0]["timestamp"],
+                UserActivity.find_validation_date(transition_history),
+                transition_history[-1]["state"],
+                " -> ".join([str(state["state"]) for state in transition_history])
+            ])
+        
+        print(rows)
