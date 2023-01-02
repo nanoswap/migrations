@@ -10,7 +10,7 @@ from typing import List
 
 class UserActivity:
     status: schemas.State
-    state: Enum
+    state: int
     ref: object  # firestore DocumentReference
     uid: str
 

@@ -33,11 +33,11 @@ loan_payment_table = db.collection(u'loan_payment_event')
 
 active_wallet_state = lambda: initial_state(schemas.WalletState.VALID_ACTIVE_WALLET, schemas.WalletState)
 initial_wallet_state = lambda: initial_state(schemas.WalletState.FROZEN_MISSING_USER_VERIFICATION, schemas.WalletState)
-initial_user_state = lambda: initial_state(schemas.UserState.CREATED, schemas.UserState)
+initial_user_state = lambda: (initial_state(schemas.UserState.CREATED, schemas.UserState), schemas.UserState.CREATED)
 initial_loan_state = lambda: initial_state(schemas.LoanApplicationState.DRAFT, schemas.LoanApplicationState)
 initial_loan_payment_state = lambda: initial_state(schemas.LoanPaymentState.SCHEDULED, schemas.LoanPaymentState)
 
-def initial_state(initial_value: int, enum_type: type):
+def initial_state(initial_value: Enum, enum_type: type):
     _, ret = insert_state(schemas.State(
         state = initial_value,
         enum_type = enum_type,
@@ -53,9 +53,11 @@ def insert_state(data: schemas.State) -> Tuple[Timestamp, Any]:
     return state_table.add(asdict(data))
 
 def status_update(data: object, new_state: Enum):
-    old_status = data.get().to_dict().get('status')
+    old_obj = data.get().to_dict()
+    old_status = old_obj.get('status')
     _, new_status_ref = state_table.add(asdict(schemas.State(
         state = new_state,
+        enum_type = old_obj.get('enum_type'),
         next = None,
         previous = old_status,
         timestamp = datetime.date.today()
